@@ -29,7 +29,7 @@ def list_endpoints():
 @app.route('/api/tanks', methods=['GET'])
 def get_tanks():
     conn = get_db_connection()
-    tanks = conn.execute('SELECT tank.id, tank.name, country.name AS country, type.name AS type, tank.year_mfg FROM tank LEFT JOIN country ON country.id = tank.country_id LEFT JOIN type on type.id = tank.type_id').fetchall()
+    tanks = conn.execute('SELECT tank.id, tank.name, country.name AS country, type.name AS type, tank.year_mfg, tank.image FROM tank LEFT JOIN country ON country.id = tank.country_id LEFT JOIN type on type.id = tank.type_id').fetchall()
     conn.close()
     return jsonify([dict(row) for row in tanks])
 
@@ -37,7 +37,7 @@ def get_tanks():
 def get_tank(id):
     conn = get_db_connection()
     query = '''
-    SELECT tank.id, tank.name, country.name AS country, type.name AS type, tank.year_mfg
+    SELECT tank.id, tank.name, country.name AS country, type.name AS type, tank.year_mfg, tank.image
     FROM tank
     LEFT JOIN country ON country.id = tank.country_id
     LEFT JOIN type ON type.id = tank.type_id
