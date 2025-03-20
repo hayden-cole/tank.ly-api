@@ -45,7 +45,7 @@ def get_tank(id):
     '''
     tank = conn.execute(query, (id,)).fetchone()
     conn.close()
-    return jsonify([dict(tank)])
+    return jsonify(dict(tank))
 
 @app.route('/api/countries', methods=['GET'])
 def get_countries():
