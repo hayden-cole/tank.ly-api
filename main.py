@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template_string
+import base64
 import sqlite3
 
 app = Flask(__name__)
@@ -29,15 +30,25 @@ def list_endpoints():
 @app.route('/api/tanks', methods=['GET'])
 def get_tanks():
     conn = get_db_connection()
-    tanks = conn.execute('SELECT tank.id, tank.name, country.name AS country, type.name AS type, tank.year_mfg, tank.image FROM tank LEFT JOIN country ON country.id = tank.country_id LEFT JOIN type on type.id = tank.type_id').fetchall()
+    tanks = conn.execute('''
+        SELECT tank.id, tank.name, country.name AS country, type.name AS type, tank.year_mfg, tank.image_url
+        FROM tank 
+        LEFT JOIN country ON country.id = tank.country_id 
+        LEFT JOIN type ON type.id = tank.type_id
+    ''').fetchall()
     conn.close()
-    return jsonify([dict(row) for row in tanks])
+
+    result = []
+    for tank in tanks:
+        result.append(dict(tank))
+    return jsonify(result)
+
 
 @app.route('/api/tanks/<int:id>', methods=['GET'])
 def get_tank(id):
     conn = get_db_connection()
     query = '''
-    SELECT tank.id, tank.name, country.name AS country, type.name AS type, tank.year_mfg, tank.image
+    SELECT tank.id, tank.name, country.name AS country, type.name AS type, tank.year_mfg, tank.image_url
     FROM tank
     LEFT JOIN country ON country.id = tank.country_id
     LEFT JOIN type ON type.id = tank.type_id
@@ -45,7 +56,11 @@ def get_tank(id):
     '''
     tank = conn.execute(query, (id,)).fetchone()
     conn.close()
-    return jsonify(dict(tank))
+
+    if tank:
+        return jsonify(dict(tank))
+    return jsonify({'message': 'Tank not found'}), 404
+
 
 @app.route('/api/countries', methods=['GET'])
 def get_countries():
